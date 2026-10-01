@@ -94,17 +94,28 @@ Click **Save** (top right).
 ### 3. Create the Automation
 
 **Saving the config screen does not start tagging.** Tagging runs only when an Automation calls the
-app. Create one in the **same space and environment**:
+app. Create one in the **same space and environment** as the installation:
 
-- **Trigger:** an entry is created.
-- **Action:** call an App Action, and choose this app's **Auto-tag by Role**.
-- **Entry ID:** map it to the **ID of the entry that triggered the Automation**.
-  - This is the one setting that must be right. A fixed value tags the same entry every time.
-- **Dry run and Simulate role:** leave both unset. They exist for the Troubleshooting tab.
+1. Go to **Automations** in the space and create a new one. Give it a name, such as
+   *Autotagging automation*.
+2. Set the **Trigger** to **Entry created**.
+3. In the left panel, open the **App actions** tab and add this app's **Auto-tag by Role**. It appears
+   in the flow as an **App action call** step.
+   - You can rename the step itself, as the screenshot does with *Tag by role*. The action it calls
+     is what matters.
+4. Select the step. In the right panel, set **Entry ID** to:
 
-Save and enable the Automation.
+   ```
+   $.trigger.payload.sys.id
+   ```
 
-<!-- TODO: replace the list above with the Automation builder's exact menu labels and a screenshot. -->
+   That is the ID of the entry that fired the trigger. The `{…}` button beside the field inserts
+   values from the trigger, so you can pick it there instead of typing it.
+   - **This is the one setting that must be right.** A fixed ID would tag the same entry every time.
+5. Leave **Dry run** and **Simulate role** empty. They exist for the Troubleshooting tab.
+6. Make sure the step's toggle is on, then click **Save**.
+
+![The Automation builder: an Entry created trigger, then an App action call step with Entry ID set to $.trigger.payload.sys.id](docs/automation-builder.png)
 
 The app does not create the Automation for you:
 - **Permissions:** apps are not permitted to create Automations.
@@ -319,7 +330,7 @@ When something fails, the message is the same one the function logs.
 **If the tab passes but entries are not tagged,** check the Automation:
 - it exists in this space **and** this environment
 - it is enabled and runs on entry creation
-- **Entry ID** is mapped to the triggering entry's ID, not a fixed value
+- **Entry ID** is `$.trigger.payload.sys.id`, not a fixed value
 - its run history shows whether it ran and whether the call failed
 
 ---
