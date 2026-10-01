@@ -65,7 +65,10 @@ export function fakeCma(fixture: Fixture) {
     tag: {
       getMany: async ({ query }) => {
         pageRequests.tag++;
-        return paged(fixture.tags.map((t) => ({ sys: { id: t.id }, name: t.name })), query);
+        return paged(
+          fixture.tags.map((t) => ({ sys: { id: t.id }, name: t.name })),
+          query
+        );
       },
     },
   };
@@ -80,14 +83,17 @@ export function fakeCma(fixture: Fixture) {
             admin: m.admin ?? false,
             roles: m.roleIds.map((id) => ({ sys: { id, linkType: 'Role' } })),
           })),
-          query,
+          query
         );
       },
     },
     role: {
       getMany: async ({ query }) => {
         pageRequests.role++;
-        return paged(fixture.roles.map((r) => ({ sys: { id: r.id }, name: r.name })), query);
+        return paged(
+          fixture.roles.map((r) => ({ sys: { id: r.id }, name: r.name })),
+          query
+        );
       },
     },
   };

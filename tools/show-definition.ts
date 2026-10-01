@@ -34,8 +34,8 @@ async function main() {
     const note = !expected.has(p.id)
       ? '   <-- not declared by this repo (npm run sync-parameters -- --prune)'
       : expected.get(p.id) !== p.type
-        ? `   <-- expected ${expected.get(p.id)}`
-        : '';
+      ? `   <-- expected ${expected.get(p.id)}`
+      : '';
     console.log(`    - ${p.id} : ${p.type}${note}`);
   }
   const declared = new Set(installation.map((p) => p.id));

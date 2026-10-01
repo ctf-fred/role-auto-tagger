@@ -13,12 +13,8 @@
       "description": "Applies the tags mapped to the roles of the user who created the entry. Pass the entry ID; the user is read from the entry's sys.createdBy.",
       "path": "src/functions/autoTagByRole.js",
       "entryFile": "src/functions/autoTagByRole.ts",
-      "accepts": [
-        "appaction.call"
-      ],
-      "allowNetworks": [
-        "api.contentful.com"
-      ]
+      "accepts": ["appaction.call"],
+      "allowNetworks": ["api.contentful.com"]
     }
   ],
   "actions": [

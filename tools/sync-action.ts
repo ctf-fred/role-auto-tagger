@@ -45,23 +45,18 @@ async function main() {
   } as unknown as Parameters<typeof cma.appAction.update>[1];
 
   const existing = await cma.appAction.getMany(params);
-  const match = existing.items.filter(
-    (a) => (a as unknown as { function?: { sys: { id: string } } }).function?.sys.id === action.functionId,
-  );
+  const match = existing.items.filter((a) => (a as unknown as { function?: { sys: { id: string } } }).function?.sys.id === action.functionId);
   if (match.length > 1) {
     throw new Error(
       `${match.length} actions invoke ${action.functionId}: ${match.map((a) => a.sys.id).join(', ')}. ` +
-        'Delete the extras in the web app first, keeping the one your Automations call.',
+        'Delete the extras in the web app first, keeping the one your Automations call.'
     );
   }
 
-  const saved = match[0]
-    ? await cma.appAction.update({ ...params, appActionId: match[0].sys.id }, payload)
-    : await cma.appAction.create(params, payload);
+  const saved = match[0] ? await cma.appAction.update({ ...params, appActionId: match[0].sys.id }, payload) : await cma.appAction.create(params, payload);
 
   console.log(`${match[0] ? 'Updated' : 'Created'} action "${saved.name}" (${saved.sys.id})`);
-  for (const p of (saved as unknown as { parameters?: Array<{ id: string; type: string; required?: boolean }> })
-    .parameters ?? []) {
+  for (const p of (saved as unknown as { parameters?: Array<{ id: string; type: string; required?: boolean }> }).parameters ?? []) {
     console.log(`  - ${p.id} : ${p.type}${p.required ? ' (required)' : ''}`);
   }
 }

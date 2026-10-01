@@ -10,7 +10,6 @@
 // contentful-management 12 is ESM, so the named import resolves under Node's native ESM.
 import { createClient } from 'contentful-management';
 
-
 const token = process.env.CONTENTFUL_ACCESS_TOKEN;
 const spaceIds = process.argv.slice(2);
 if (!token) throw new Error('CONTENTFUL_ACCESS_TOKEN is not set — add it to .env');
@@ -28,8 +27,7 @@ async function all<T>(fetch: (q: { limit: number; skip: number }) => Promise<{ i
   }
 }
 
-const describe = (a: { admin: boolean; roles: Set<string> }) =>
-  a.admin ? 'admin' : [...a.roles].sort().join(',') || '(no roles)';
+const describe = (a: { admin: boolean; roles: Set<string> }) => (a.admin ? 'admin' : [...a.roles].sort().join(',') || '(no roles)');
 
 let failures = 0;
 for (const spaceId of spaceIds) {
@@ -72,7 +70,7 @@ for (const spaceId of spaceIds) {
     if (!ok) failures++;
     console.log(
       `  ${ok ? 'ok  ' : 'DIFF'} ${userId}  via ${d ? [...d.via].join(' + ') : '(nothing)'}  ` +
-        `space_members=${e ? describe(e) : '(absent)'}${ok ? '' : `  derived=${d ? describe(d) : '(absent)'}`}`,
+        `space_members=${e ? describe(e) : '(absent)'}${ok ? '' : `  derived=${d ? describe(d) : '(absent)'}`}`
     );
   }
 }

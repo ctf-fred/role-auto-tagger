@@ -17,15 +17,12 @@ import { accessToken, appDefinitionId, orgId } from './env';
 import { fail } from './fail';
 import { PARAMETERS, type DefinitionParameter } from './parameters';
 
-
 async function main() {
   const cma = createClient({ accessToken: accessToken() }, { type: 'plain' });
   const params = { organizationId: orgId(), appDefinitionId: appDefinitionId() };
   const definition = await cma.appDefinition.get(params);
 
-  const existing =
-    (definition as unknown as { parameters?: { installation?: DefinitionParameter[] } }).parameters
-      ?.installation ?? [];
+  const existing = (definition as unknown as { parameters?: { installation?: DefinitionParameter[] } }).parameters?.installation ?? [];
   const ours = new Set(PARAMETERS.map((p) => p.id));
   const others = existing.filter((p) => !ours.has(p.id));
 

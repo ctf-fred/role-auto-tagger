@@ -18,7 +18,7 @@ async function main() {
   if (process.env.CONTENTFUL_APP_DEF_ID?.trim()) {
     console.log(
       `CONTENTFUL_APP_DEF_ID is already set to ${process.env.CONTENTFUL_APP_DEF_ID.trim()}.\n` +
-        'Clear it in .env first if you really want a second definition.',
+        'Clear it in .env first if you really want a second definition.'
     );
     return;
   }
@@ -26,15 +26,12 @@ async function main() {
   const cma = createClient({ accessToken: accessToken() }, { type: 'plain' });
   const organizationId = orgId();
 
-  const definition = await cma.appDefinition.create(
-    { organizationId },
-    {
-      name: APP_NAME,
-      // Replaced by the uploaded bundle on the first `npm run activate`.
-      src: 'http://localhost:3002',
-      locations: [{ location: 'app-config' }],
-    } as never,
-  );
+  const definition = await cma.appDefinition.create({ organizationId }, {
+    name: APP_NAME,
+    // Replaced by the uploaded bundle on the first `npm run activate`.
+    src: 'http://localhost:3002',
+    locations: [{ location: 'app-config' }],
+  } as never);
 
   console.log(`Created "${APP_NAME}" in organization ${organizationId}.\n`);
   console.log(`  CONTENTFUL_APP_DEF_ID=${definition.sys.id}\n`);

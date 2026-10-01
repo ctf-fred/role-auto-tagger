@@ -58,17 +58,7 @@ const TAGS_PER_PAGE = 20;
  * One role's tag checkboxes. A space can hold hundreds of tags, so the list is searchable and paged
  * rather than rendered whole; the count in the heading always covers every page.
  */
-function RoleTagPicker({
-  role,
-  tags,
-  mappedTagIds,
-  onToggle,
-}: {
-  role: RoleItem;
-  tags: TagItem[];
-  mappedTagIds: string[];
-  onToggle: (tagId: string) => void;
-}) {
+function RoleTagPicker({ role, tags, mappedTagIds, onToggle }: { role: RoleItem; tags: TagItem[]; mappedTagIds: string[]; onToggle: (tagId: string) => void }) {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(0);
 
@@ -89,7 +79,10 @@ function RoleTagPicker({
           size="small"
           placeholder={`Search ${tags.length} tags…`}
           value={query}
-          onChange={(e) => { setQuery(e.target.value); setPage(0); }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setPage(0);
+          }}
           aria-label={`Search tags for ${role.name}`}
         />
       )}
@@ -98,12 +91,7 @@ function RoleTagPicker({
       ) : (
         <Flex flexDirection="column" gap="spacingXs">
           {visible.map((tag) => (
-            <Checkbox
-              key={tag.id}
-              id={`role-${role.id}--tag-${tag.id}`}
-              isChecked={mappedTagIds.includes(tag.id)}
-              onChange={() => onToggle(tag.id)}
-            >
+            <Checkbox key={tag.id} id={`role-${role.id}--tag-${tag.id}`} isChecked={mappedTagIds.includes(tag.id)} onChange={() => onToggle(tag.id)}>
               {tag.name}
             </Checkbox>
           ))}
@@ -227,39 +215,28 @@ export default function ConfigScreen() {
   // ── Config toggles ────────────────────────────────────────────────────────────
 
   function toggleTagGroup(group: string) {
-    setEnabledTagGroups((prev) =>
-      prev.includes(group) ? prev.filter((g) => g !== group) : [...prev, group]
-    );
+    setEnabledTagGroups((prev) => (prev.includes(group) ? prev.filter((g) => g !== group) : [...prev, group]));
   }
 
   function toggleRoleTag(roleId: string, tagId: string) {
     setRoleTagMapping((prev) => {
       const current = prev[roleId] ?? [];
-      const updated = current.includes(tagId)
-        ? current.filter((id) => id !== tagId)
-        : [...current, tagId];
+      const updated = current.includes(tagId) ? current.filter((id) => id !== tagId) : [...current, tagId];
       return { ...prev, [roleId]: updated };
     });
   }
 
-  const eligibleTags = useMemo(
-    () => allTags.filter((t) => enabledTagGroups.includes(t.group)),
-    [allTags, enabledTagGroups],
-  );
+  const eligibleTags = useMemo(() => allTags.filter((t) => enabledTagGroups.includes(t.group)), [allTags, enabledTagGroups]);
 
   const hasUnsavedChanges =
     cmaToken !== '' ||
-    serializeParams({ enabledTagGroups, roleTagMapping }).enabledTagGroups !==
-      serializeParams(saved).enabledTagGroups ||
-    serializeParams({ enabledTagGroups, roleTagMapping }).roleTagMapping !==
-      serializeParams(saved).roleTagMapping;
+    serializeParams({ enabledTagGroups, roleTagMapping }).enabledTagGroups !== serializeParams(saved).enabledTagGroups ||
+    serializeParams({ enabledTagGroups, roleTagMapping }).roleTagMapping !== serializeParams(saved).roleTagMapping;
 
   // Only tags in an enabled group would be applied, so that is what the role list counts.
   const savedApplicableMapping = useMemo(() => {
     const applicable = new Set(allTags.filter((t) => saved.enabledTagGroups.includes(t.group)).map((t) => t.id));
-    return Object.fromEntries(
-      Object.entries(saved.roleTagMapping).map(([role, ids]) => [role, ids.filter((id) => applicable.has(id))]),
-    );
+    return Object.fromEntries(Object.entries(saved.roleTagMapping).map(([role, ids]) => [role, ids.filter((id) => applicable.has(id))]));
   }, [allTags, saved]);
 
   // ── Render ────────────────────────────────────────────────────────────────────
@@ -268,8 +245,8 @@ export default function ConfigScreen() {
     <Flex flexDirection="column" margin="spacingXl" style={{ maxWidth: 640 }}>
       <Heading>Role auto tagger</Heading>
       <Paragraph>
-        Tags a new entry automatically based on the roles of the user who created it. Choose which
-        tag groups may be applied, then which tags each role receives.
+        Tags a new entry automatically based on the roles of the user who created it. Choose which tag groups may be applied, then which tags each role
+        receives.
       </Paragraph>
 
       {loadError && (
@@ -279,9 +256,8 @@ export default function ConfigScreen() {
       )}
 
       <Note variant="neutral" title="Tagging runs from an Automation" style={{ marginBottom: 24 }}>
-        Saving this screen does not start tagging on its own. Create a Contentful Automation that runs on
-        entry creation and calls this app's “Auto-tag by Role” action with the new entry's ID. The
-        README describes the steps.
+        Saving this screen does not start tagging on its own. Create a Contentful Automation that runs on entry creation and calls this app's “Auto-tag by Role”
+        action with the new entry's ID. The README describes the steps.
       </Note>
 
       <Tabs defaultTab="configuration">
@@ -290,118 +266,101 @@ export default function ConfigScreen() {
           <Tabs.Tab panelId="troubleshooting">Troubleshooting</Tabs.Tab>
         </Tabs.List>
 
-      <Tabs.Panel id="configuration">
-      <Box marginTop="spacingL">
-      <Form>
-        {/* CMA token for auto-tag function */}
-        <FormControl id="cma-token" marginBottom="spacingL">
-          <FormControl.Label>CMA token (user role look-up)</FormControl.Label>
-          <TextInput
-            type="password"
-            autoComplete="off"
-            value={cmaToken}
-            onChange={(e) => { setCmaToken(e.target.value); setCmaTokenSaved(false); }}
-            placeholder={cmaTokenSaved ? 'Already set — enter a new value to replace it' : 'CFPAT-…'}
-          />
-          <FormControl.HelpText>
-            Used only to read this space's members and roles, which an app cannot read on its own. It
-            needs no write access. Stored as an encrypted secret; leave blank to keep the existing token.
-          </FormControl.HelpText>
-        </FormControl>
-
-        {/* Global tag groups */}
-        <FormControl marginBottom="spacingL">
-          <FormControl.Label>Tag groups</FormControl.Label>
-          {loading ? (
-            <Flex flexDirection="column" gap="spacingS">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton.Container key={i}>
-                  <Skeleton.BodyText numberOfLines={1} />
-                </Skeleton.Container>
-              ))}
-            </Flex>
-          ) : tagGroups.length === 0 ? (
-            <Text fontColor="gray500">No grouped tags found (expected format: "Group: value").</Text>
-          ) : (
-            <Flex flexDirection="column" gap="spacingXs">
-              {tagGroups.map((group) => (
-                <Switch
-                  key={group}
-                  id={`global--${group}`}
-                  isChecked={enabledTagGroups.includes(group)}
-                  onChange={() => toggleTagGroup(group)}
-                >
-                  {group}
-                </Switch>
-              ))}
-            </Flex>
-          )}
-          <FormControl.HelpText>
-            Only tags from enabled groups can be mapped to a role or applied automatically.
-          </FormControl.HelpText>
-        </FormControl>
-
-        {/* Role auto-tagging */}
-        <FormControl marginBottom="spacingL">
-          <FormControl.Label>Role auto-tagging</FormControl.Label>
-          {loading ? (
-            <Flex flexDirection="column" gap="spacingS">
-              {Array.from({ length: 2 }).map((_, i) => (
-                <Skeleton.Container key={i}>
-                  <Skeleton.BodyText numberOfLines={2} />
-                </Skeleton.Container>
-              ))}
-            </Flex>
-          ) : roles.length === 0 ? (
-            <Text fontColor="gray500">No roles found in this space.</Text>
-          ) : enabledTagGroups.length === 0 ? (
-            <Text fontColor="gray500">Enable at least one tag group above to configure auto-tagging.</Text>
-          ) : (
-            <Accordion>
-              {roles.map((role) => {
-                const mappedTagIds = roleTagMapping[role.id] ?? [];
-                const checkedCount = eligibleTags.filter((t) => mappedTagIds.includes(t.id)).length;
-                return (
-                  <AccordionItem key={role.id} title={`${role.name}${checkedCount > 0 ? ` (${checkedCount} tag${checkedCount !== 1 ? 's' : ''})` : ''}`}>
-                    <RoleTagPicker
-                      role={role}
-                      tags={eligibleTags}
-                      mappedTagIds={mappedTagIds}
-                      onToggle={(tagId) => toggleRoleTag(role.id, tagId)}
-                    />
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
-          )}
-          <FormControl.HelpText>
-            When an entry is created, the tags mapped to its creator's roles are added. This works the
-            same whether the user was added to the space directly or through a team. Space admins hold
-            no roles, so no mapping applies to them.
-          </FormControl.HelpText>
-        </FormControl>
-
-      </Form>
-      </Box>
-      </Tabs.Panel>
-
-      <Tabs.Panel id="troubleshooting">
-        {loading ? (
+        <Tabs.Panel id="configuration">
           <Box marginTop="spacingL">
-            <Skeleton.Container>
-              <Skeleton.BodyText numberOfLines={3} />
-            </Skeleton.Container>
+            <Form>
+              {/* CMA token for auto-tag function */}
+              <FormControl id="cma-token" marginBottom="spacingL">
+                <FormControl.Label>CMA token (user role look-up)</FormControl.Label>
+                <TextInput
+                  type="password"
+                  autoComplete="off"
+                  value={cmaToken}
+                  onChange={(e) => {
+                    setCmaToken(e.target.value);
+                    setCmaTokenSaved(false);
+                  }}
+                  placeholder={cmaTokenSaved ? 'Already set — enter a new value to replace it' : 'CFPAT-…'}
+                />
+                <FormControl.HelpText>
+                  Used only to read this space's members and roles, which an app cannot read on its own. It needs no write access. Stored as an encrypted
+                  secret; leave blank to keep the existing token.
+                </FormControl.HelpText>
+              </FormControl>
+
+              {/* Global tag groups */}
+              <FormControl marginBottom="spacingL">
+                <FormControl.Label>Tag groups</FormControl.Label>
+                {loading ? (
+                  <Flex flexDirection="column" gap="spacingS">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Skeleton.Container key={i}>
+                        <Skeleton.BodyText numberOfLines={1} />
+                      </Skeleton.Container>
+                    ))}
+                  </Flex>
+                ) : tagGroups.length === 0 ? (
+                  <Text fontColor="gray500">No grouped tags found (expected format: "Group: value").</Text>
+                ) : (
+                  <Flex flexDirection="column" gap="spacingXs">
+                    {tagGroups.map((group) => (
+                      <Switch key={group} id={`global--${group}`} isChecked={enabledTagGroups.includes(group)} onChange={() => toggleTagGroup(group)}>
+                        {group}
+                      </Switch>
+                    ))}
+                  </Flex>
+                )}
+                <FormControl.HelpText>Only tags from enabled groups can be mapped to a role or applied automatically.</FormControl.HelpText>
+              </FormControl>
+
+              {/* Role auto-tagging */}
+              <FormControl marginBottom="spacingL">
+                <FormControl.Label>Role auto-tagging</FormControl.Label>
+                {loading ? (
+                  <Flex flexDirection="column" gap="spacingS">
+                    {Array.from({ length: 2 }).map((_, i) => (
+                      <Skeleton.Container key={i}>
+                        <Skeleton.BodyText numberOfLines={2} />
+                      </Skeleton.Container>
+                    ))}
+                  </Flex>
+                ) : roles.length === 0 ? (
+                  <Text fontColor="gray500">No roles found in this space.</Text>
+                ) : enabledTagGroups.length === 0 ? (
+                  <Text fontColor="gray500">Enable at least one tag group above to configure auto-tagging.</Text>
+                ) : (
+                  <Accordion>
+                    {roles.map((role) => {
+                      const mappedTagIds = roleTagMapping[role.id] ?? [];
+                      const checkedCount = eligibleTags.filter((t) => mappedTagIds.includes(t.id)).length;
+                      return (
+                        <AccordionItem key={role.id} title={`${role.name}${checkedCount > 0 ? ` (${checkedCount} tag${checkedCount !== 1 ? 's' : ''})` : ''}`}>
+                          <RoleTagPicker role={role} tags={eligibleTags} mappedTagIds={mappedTagIds} onToggle={(tagId) => toggleRoleTag(role.id, tagId)} />
+                        </AccordionItem>
+                      );
+                    })}
+                  </Accordion>
+                )}
+                <FormControl.HelpText>
+                  When an entry is created, the tags mapped to its creator's roles are added. This works the same whether the user was added to the space
+                  directly or through a team. Space admins hold no roles, so no mapping applies to them.
+                </FormControl.HelpText>
+              </FormControl>
+            </Form>
           </Box>
-        ) : (
-          <Troubleshooting
-            sdk={sdk}
-            roles={roles}
-            tags={allTags}
-            savedMapping={savedApplicableMapping}
-            hasUnsavedChanges={hasUnsavedChanges}
-          />
-        )}
-      </Tabs.Panel>
+        </Tabs.Panel>
+
+        <Tabs.Panel id="troubleshooting">
+          {loading ? (
+            <Box marginTop="spacingL">
+              <Skeleton.Container>
+                <Skeleton.BodyText numberOfLines={3} />
+              </Skeleton.Container>
+            </Box>
+          ) : (
+            <Troubleshooting sdk={sdk} roles={roles} tags={allTags} savedMapping={savedApplicableMapping} hasUnsavedChanges={hasUnsavedChanges} />
+          )}
+        </Tabs.Panel>
       </Tabs>
     </Flex>
   );

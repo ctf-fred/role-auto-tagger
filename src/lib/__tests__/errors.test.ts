@@ -7,9 +7,7 @@ describe('describeError', () => {
   });
 
   it('reads a plain object, which is what the browser CMA client rejects with', () => {
-    expect(describeError({ status: 403, statusText: 'Forbidden', details: { reasons: ['no access'] } })).toBe(
-      '403 Forbidden: no access',
-    );
+    expect(describeError({ status: 403, statusText: 'Forbidden', details: { reasons: ['no access'] } })).toBe('403 Forbidden: no access');
   });
 
   it('unwraps a JSON-encoded message and keeps the request ID', () => {

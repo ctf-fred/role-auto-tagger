@@ -154,7 +154,9 @@ describe('writes', () => {
   it('retries a version conflict and keeps a tag added concurrently', async () => {
     const fixture = base();
     fixture.conflicts = 1;
-    fixture.onConflict = (entry) => { entry.metadata = { tags: [tag('brandAcme')] }; };
+    fixture.onConflict = (entry) => {
+      entry.metadata = { tags: [tag('brandAcme')] };
+    };
     const { outcome, patches, stored } = await run(fixture);
     expect(patches).toHaveLength(2);
     expect(patches[1].version).toBe(4);
@@ -165,7 +167,9 @@ describe('writes', () => {
   it('stops retrying when the concurrent edit already added the tag', async () => {
     const fixture = base();
     fixture.conflicts = 1;
-    fixture.onConflict = (entry) => { entry.metadata = { tags: [tag('domainBe')] }; };
+    fixture.onConflict = (entry) => {
+      entry.metadata = { tags: [tag('domainBe')] };
+    };
     const { outcome, patches } = await run(fixture);
     expect(patches).toHaveLength(1);
     expect(outcome.skippedTagIds).toEqual(['domainBe']);
@@ -180,12 +184,19 @@ describe('writes', () => {
   it('does not retry an error that is not a version conflict', async () => {
     const fixture = base();
     const fake = fakeCma(fixture);
-    fake.cma.entry.patch = async () => { throw Object.assign(new Error('forbidden'), { status: 403 }); };
+    fake.cma.entry.patch = async () => {
+      throw Object.assign(new Error('forbidden'), { status: 403 });
+    };
     await expect(
       autoTagEntry({
-        cma: fake.cma, patCma: fake.patCma, spaceId: 's', environmentId: 'e', entryId: 'x',
-        params, log: () => {},
-      }),
+        cma: fake.cma,
+        patCma: fake.patCma,
+        spaceId: 's',
+        environmentId: 'e',
+        entryId: 'x',
+        params,
+        log: () => {},
+      })
     ).rejects.toThrow('forbidden');
   });
 });
@@ -193,10 +204,7 @@ describe('writes', () => {
 describe('pagination', () => {
   it('finds a member beyond the first page', async () => {
     const fixture = base();
-    fixture.members = [
-      ...Array.from({ length: 250 }, (_, i) => ({ userId: `filler-${i}`, roleIds: [AUTHOR] })),
-      { userId: 'user-1', roleIds: [EDITOR] },
-    ];
+    fixture.members = [...Array.from({ length: 250 }, (_, i) => ({ userId: `filler-${i}`, roleIds: [AUTHOR] })), { userId: 'user-1', roleIds: [EDITOR] }];
     const { outcome, pageRequests } = await run(fixture);
     expect(outcome.appliedTagIds).toEqual(['domainBe']);
     expect(pageRequests.spaceMember).toBe(3);
@@ -204,7 +212,10 @@ describe('pagination', () => {
 
   it('getAll stops on an empty page even if total is wrong', async () => {
     let calls = 0;
-    const items = await getAll(async () => { calls++; return { items: calls === 1 ? [1, 2] : [], total: 99 }; });
+    const items = await getAll(async () => {
+      calls++;
+      return { items: calls === 1 ? [1, 2] : [], total: 99 };
+    });
     expect(items).toEqual([1, 2]);
     expect(calls).toBe(2);
   });

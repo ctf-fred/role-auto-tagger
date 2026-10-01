@@ -1,18 +1,6 @@
 import { useState } from 'react';
 import type { ConfigAppSDK } from '@contentful/app-sdk';
-import {
-  Box,
-  Button,
-  Flex,
-  FormControl,
-  List,
-  ListItem,
-  Note,
-  Paragraph,
-  Select,
-  Text,
-  TextLink,
-} from '@contentful/f36-components';
+import { Box, Button, Flex, FormControl, List, ListItem, Note, Paragraph, Select, Text, TextLink } from '@contentful/f36-components';
 import type { AutoTagOutcome } from '../lib/autoTag';
 import { describeError } from '../lib/errors';
 
@@ -26,9 +14,7 @@ interface TagItem {
   name: string;
 }
 
-type CallResult =
-  | { kind: 'succeeded'; outcome: AutoTagOutcome; log: string[] }
-  | { kind: 'failed'; message: string; log: string[] };
+type CallResult = { kind: 'succeeded'; outcome: AutoTagOutcome; log: string[] } | { kind: 'failed'; message: string; log: string[] };
 
 interface PickedEntry {
   id: string;
@@ -114,16 +100,18 @@ export default function Troubleshooting({
             simulateRoleId: roleId,
             ...(entry ? { entryId: entry.id } : {}),
           },
-        },
+        }
       );
       // The call's status, result and error sit under `sys`, not at the top level.
-      const done = (call as unknown as {
-        sys: {
-          status: 'succeeded' | 'failed' | 'processing';
-          result?: AutoTagOutcome & { log?: string[]; failed?: boolean; error?: string };
-          error?: { message: string; details?: unknown };
-        };
-      }).sys;
+      const done = (
+        call as unknown as {
+          sys: {
+            status: 'succeeded' | 'failed' | 'processing';
+            result?: AutoTagOutcome & { log?: string[]; failed?: boolean; error?: string };
+            error?: { message: string; details?: unknown };
+          };
+        }
+      ).sys;
       if (done.status === 'succeeded' && done.result?.failed) {
         // The function caught the error and returned it, which is the only way its message survives.
         setResult({ kind: 'failed', message: done.result.error ?? 'Unknown error', log: done.result.log ?? [] });
@@ -147,8 +135,8 @@ export default function Troubleshooting({
   return (
     <Flex flexDirection="column" gap="spacingL" marginTop="spacingL">
       <Paragraph marginBottom="none">
-        Choose a role to see which tags an entry created by someone with that role would receive. This
-        runs the same action as your Automation, with the saved configuration, and writes nothing.
+        Choose a role to see which tags an entry created by someone with that role would receive. This runs the same action as your Automation, with the saved
+        configuration, and writes nothing.
       </Paragraph>
 
       {hasUnsavedChanges && (
@@ -164,8 +152,7 @@ export default function Troubleshooting({
           onChange={(e) => {
             setRoleId(e.target.value);
             setResult(null);
-          }}
-        >
+          }}>
           <Select.Option value="" isDisabled>
             Choose a role…
           </Select.Option>
@@ -194,7 +181,13 @@ export default function Troubleshooting({
               <TextLink as="button" onClick={pickEntry}>
                 Change
               </TextLink>
-              <TextLink as="button" variant="negative" onClick={() => { setEntry(null); setResult(null); }}>
+              <TextLink
+                as="button"
+                variant="negative"
+                onClick={() => {
+                  setEntry(null);
+                  setResult(null);
+                }}>
                 Clear
               </TextLink>
             </>
@@ -205,8 +198,7 @@ export default function Troubleshooting({
           )}
         </Flex>
         <FormControl.HelpText>
-          With an entry, the result also shows which tags it already has. Its creator is ignored: the
-          role above is used instead.
+          With an entry, the result also shows which tags it already has. Its creator is ignored: the role above is used instead.
         </FormControl.HelpText>
       </FormControl>
 
@@ -221,15 +213,7 @@ export default function Troubleshooting({
   );
 }
 
-function ResultView({
-  result,
-  roleName,
-  tagName,
-}: {
-  result: CallResult;
-  roleName: string;
-  tagName: (id: string) => string;
-}) {
+function ResultView({ result, roleName, tagName }: { result: CallResult; roleName: string; tagName: (id: string) => string }) {
   if (result.kind === 'failed') {
     return (
       <Flex flexDirection="column" gap="spacingM">
@@ -261,9 +245,7 @@ function ResultView({
       {(already.length > 0 || dropped.length > 0) && (
         <List>
           {already.map((id) => (
-            <ListItem key={`a-${id}`}>
-              {tagName(id)}: already on the entry
-            </ListItem>
+            <ListItem key={`a-${id}`}>{tagName(id)}: already on the entry</ListItem>
           ))}
           {dropped.map((d) => (
             <ListItem key={`d-${d.id}`}>
@@ -297,8 +279,7 @@ function LogBox({ lines }: { lines: string[] }) {
           background: 'var(--gray-100, #F7F9FA)',
           borderRadius: 4,
           margin: 0,
-        }}
-      >
+        }}>
         {lines.length > 0 ? lines.join('\n') : '(nothing logged)'}
       </Box>
     </Box>

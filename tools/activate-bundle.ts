@@ -36,9 +36,7 @@ async function main() {
     if (bundles.items.length === 0) {
       throw new Error('No app bundles found — run `npm run build:all && npm run upload-ci` first');
     }
-    const newest = [...bundles.items]
-      .sort((a, b) => Date.parse(a.sys.createdAt) - Date.parse(b.sys.createdAt))
-      .pop()!;
+    const newest = [...bundles.items].sort((a, b) => Date.parse(a.sys.createdAt) - Date.parse(b.sys.createdAt)).pop()!;
     bundleId = newest.sys.id;
     console.log(`Newest bundle: ${bundleId} (created ${newest.sys.createdAt})`);
   }

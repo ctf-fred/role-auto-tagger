@@ -18,24 +18,17 @@ export type TagPatch = { op: 'add' | 'replace'; path: '/metadata/tags'; value: T
 export interface AutoTagCma {
   entry: {
     get(params: { spaceId: string; environmentId: string; entryId: string }): Promise<EntryLike>;
-    patch(
-      params: { spaceId: string; environmentId: string; entryId: string; version: number },
-      ops: TagPatch[],
-    ): Promise<unknown>;
+    patch(params: { spaceId: string; environmentId: string; entryId: string; version: number }, ops: TagPatch[]): Promise<unknown>;
   };
   tag: {
-    getMany(params: { spaceId: string; environmentId: string; query: PageQuery }): Promise<
-      Page<{ sys: { id: string }; name: string }>
-    >;
+    getMany(params: { spaceId: string; environmentId: string; query: PageQuery }): Promise<Page<{ sys: { id: string }; name: string }>>;
   };
 }
 
 /** Membership and role access. Needs a PAT: app identity cannot read who is a member of a space. */
 export interface RoleLookupCma {
   spaceMember: {
-    getMany(params: { spaceId: string; query: PageQuery }): Promise<
-      Page<{ sys: { user: Link }; admin: boolean; roles: Link[] }>
-    >;
+    getMany(params: { spaceId: string; query: PageQuery }): Promise<Page<{ sys: { user: Link }; admin: boolean; roles: Link[] }>>;
   };
   role: {
     getMany(params: { spaceId: string; query: PageQuery }): Promise<Page<{ sys: { id: string }; name: string }>>;
@@ -82,7 +75,11 @@ const MAX_PATCH_ATTEMPTS = 3;
 // Installation parameters have no List or Object type, so arrays and objects arrive as JSON strings.
 export function parseJsonParam<T>(val: unknown, fallback: T): T {
   if (typeof val === 'string') {
-    try { return JSON.parse(val) as T; } catch { return fallback; }
+    try {
+      return JSON.parse(val) as T;
+    } catch {
+      return fallback;
+    }
   }
   return val != null ? (val as T) : fallback;
 }
@@ -206,9 +203,7 @@ export async function autoTagEntry(opts: {
     return nothing('nothing configured — roleTagMapping or enabledTagGroups is empty');
   }
 
-  let entry: EntryLike | undefined = entryId
-    ? await cma.entry.get({ spaceId, environmentId, entryId })
-    : undefined;
+  let entry: EntryLike | undefined = entryId ? await cma.entry.get({ spaceId, environmentId, entryId }) : undefined;
 
   let roleIds: string[];
   let tags: Array<{ sys: { id: string }; name: string }>;
@@ -250,17 +245,14 @@ export async function autoTagEntry(opts: {
     if (roleIds.length === 0) {
       // A space admin has no roles — admin is a flag, not a role — so no mapping can match.
       return nothing(
-        member.admin
-          ? `user ${userId} is a space admin; admins hold no roles, so no role mapping applies`
-          : `user ${userId} has no roles in space ${spaceId}`,
+        member.admin ? `user ${userId} is a space admin; admins hold no roles, so no role mapping applies` : `user ${userId} has no roles in space ${spaceId}`
       );
     }
   }
 
   const roleNameById = new Map(roles.map((r) => [r.sys.id, r.name]));
   const tagNameById = new Map(tags.map((t) => [t.sys.id, t.name]));
-  const describeTags = (ids: string[]) =>
-    ids.map((id) => `${tagNameById.get(id) ?? id} (${id})`).join(', ') || '(none)';
+  const describeTags = (ids: string[]) => ids.map((id) => `${tagNameById.get(id) ?? id} (${id})`).join(', ') || '(none)';
   trace.roles = roleIds.map((id) => ({ id, name: roleNameById.get(id) ?? id }));
 
   if (!simulateRoleId) {
@@ -275,9 +267,7 @@ export async function autoTagEntry(opts: {
     return nothing("no tags mapped for any of the user's roles — check roleTagMapping keys match role IDs");
   }
 
-  const enabledTagIds = new Set(
-    tags.filter((t) => enabledTagGroups.includes(groupOf(t.name) ?? '')).map((t) => t.sys.id),
-  );
+  const enabledTagIds = new Set(tags.filter((t) => enabledTagGroups.includes(groupOf(t.name) ?? '')).map((t) => t.sys.id));
   // A mapped tag that no longer exists in the space is dropped here too, rather than 422ing the patch.
   const tagIdsToApply = [...candidateTagIds].filter((id) => enabledTagIds.has(id));
   const dropped: DroppedTag[] = [...candidateTagIds]
@@ -287,9 +277,7 @@ export async function autoTagEntry(opts: {
     trace.droppedTagIds = dropped;
     log(
       '[autoTagByRole] mapped but not applied:',
-      dropped
-        .map((d) => `${tagNameById.get(d.id) ?? d.id} (${d.id}) — ${d.why === 'tag-deleted' ? 'no longer exists' : 'its group is not enabled'}`)
-        .join(', '),
+      dropped.map((d) => `${tagNameById.get(d.id) ?? d.id} (${d.id}) — ${d.why === 'tag-deleted' ? 'no longer exists' : 'its group is not enabled'}`).join(', ')
     );
   }
   if (tagIdsToApply.length === 0) {

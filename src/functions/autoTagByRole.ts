@@ -1,13 +1,6 @@
 import type { FunctionEventHandler, FunctionTypeEnum } from '@contentful/node-apps-toolkit';
 import { createClient } from 'contentful-management';
-import {
-  autoTagEntry,
-  readOptionalEntryId,
-  readParameters,
-  readRunOptions,
-  type AutoTagCma,
-  type RoleLookupCma,
-} from '../lib/autoTag';
+import { autoTagEntry, readOptionalEntryId, readParameters, readRunOptions, type AutoTagCma, type RoleLookupCma } from '../lib/autoTag';
 import { describeError } from '../lib/errors';
 
 /**
@@ -24,10 +17,7 @@ function makeLog() {
   return { log, lines };
 }
 
-export const handler: FunctionEventHandler<FunctionTypeEnum.AppActionCall> = async (
-  event,
-  context,
-) => {
+export const handler: FunctionEventHandler<FunctionTypeEnum.AppActionCall> = async (event, context) => {
   const { log, lines } = makeLog();
   // Read first, so a failure below knows whether this was the Troubleshooting tab's dry run. An
   // unreadable body counts as a real run.

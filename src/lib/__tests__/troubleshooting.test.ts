@@ -115,7 +115,7 @@ describe('logged lines are what the tab shows', () => {
   it('every line the engine logs reaches the injected log, including the reason', async () => {
     const { outcome, lines } = await run(base(), { dryRun: true, simulateRoleId: EDITOR });
     expect(lines[0]).toBe('[autoTagByRole] dry run — nothing will be written');
-    expect(lines).toContain('[autoTagByRole] simulating role Editor (role-editor) instead of the entry\'s creator');
+    expect(lines).toContain("[autoTagByRole] simulating role Editor (role-editor) instead of the entry's creator");
     expect(lines.at(-1)).toBe('[autoTagByRole] dry run — would add: Domain: Belgium (domainBe)');
     expect(outcome.reason).toBeUndefined();
   });
@@ -127,7 +127,10 @@ describe('readRunOptions', () => {
     [{ dryRun: true }, { dryRun: true }],
     [{ dryRun: 'true' }, { dryRun: true }],
     [{ dryRun: 'yes' }, { dryRun: false }],
-    [{ dryRun: true, simulateRoleId: ' role-1 ' }, { dryRun: true, simulateRoleId: 'role-1' }],
+    [
+      { dryRun: true, simulateRoleId: ' role-1 ' },
+      { dryRun: true, simulateRoleId: 'role-1' },
+    ],
     [{ dryRun: true, simulateRoleId: '' }, { dryRun: true }],
   ])('reads %j', (body, expected) => {
     expect(readRunOptions(body)).toEqual(expected);
